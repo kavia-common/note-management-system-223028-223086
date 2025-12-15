@@ -46,11 +46,18 @@ app.use('/', routes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
+  const status = err.status || 500;
+  const payload = {
     status: 'error',
-    message: 'Internal Server Error',
-  });
+    message: status === 500 ? 'Internal Server Error' : err.message,
+  };
+  if (err.details) {
+    payload.details = err.details;
+  }
+  if (status === 500) {
+    console.error(err.stack || err);
+  }
+  res.status(status).json(payload);
 });
 
 module.exports = app;
